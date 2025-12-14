@@ -130,6 +130,47 @@ npm run build
 npm start
 ```
 
+## 🚀 Deploy na Vercel
+
+### Passo a Passo
+
+1. **Faça push do código para o GitHub**
+
+2. **Importe o projeto na Vercel**
+   - Acesse [vercel.com](https://vercel.com)
+   - Clique em "Add New Project"
+   - Importe seu repositório do GitHub
+
+3. **Configure as Variáveis de Ambiente**
+   
+   Na Vercel, adicione todas as variáveis de ambiente (Settings > Environment Variables):
+   
+   ```
+   DATABASE_URL=sua-connection-string-do-neon
+   BETTER_AUTH_SECRET=sua-chave-secreta
+   BETTER_AUTH_URL=https://seu-projeto.vercel.app
+   NEXT_PUBLIC_URL=https://seu-projeto.vercel.app
+   AUTH_GOOGLE_ID=seu-google-client-id
+   AUTH_GOOGLE_SECRET=seu-google-secret
+   ```
+
+4. **Atualize o Google OAuth**
+   
+   No [Google Cloud Console](https://console.cloud.google.com/):
+   - Adicione sua URL da Vercel nas origens autorizadas: `https://seu-projeto.vercel.app`
+   - Adicione o callback: `https://seu-projeto.vercel.app/api/auth/callback/google`
+
+5. **Deploy automático**
+   
+   A Vercel fará o deploy automaticamente. O script `postinstall` gerará o Prisma Client durante o build.
+
+### ⚠️ Importante para Deploy
+
+- O Prisma Client é gerado automaticamente durante o build via script `postinstall`
+- Certifique-se de que todas as migrações foram aplicadas no banco de dados de produção
+- Use um banco PostgreSQL em produção (recomendado: [Neon](https://neon.tech/) ou [Supabase](https://supabase.com/))
+- Nunca commite o arquivo `.env` com credenciais reais
+
 ## 📖 Funcionalidades Implementadas
 
 ### Autenticação com Credenciais
@@ -222,6 +263,10 @@ npm start
 - Validação de formulários client-side e server-side
 - Proteção de rotas em Next.js App Router
 - Gerenciamento de estado de autenticação
+
+## 🐛 Problemas Comuns
+
+Encontrou algum erro durante o build ou deploy? Consulte nosso [Guia de Troubleshooting](TROUBLESHOOTING.md) com soluções para os problemas mais comuns.
 
 ## 🤝 Contribuindo
 
