@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
@@ -115,6 +116,15 @@ export function LoginForm() {
             </FormItem>
           )}
         />
+
+        <div className="flex justify-end">
+          <Link 
+            href="/forgot-password" 
+            className="text-sm text-muted-foreground hover:text-primary transition-colors"
+          >
+            Esqueci minha senha
+          </Link>
+        </div>
 
         <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
           {form.formState.isSubmitting ? (
