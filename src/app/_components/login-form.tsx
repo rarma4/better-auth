@@ -13,6 +13,8 @@ import { Input } from "@/components/ui/input"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { GoogleLogo } from "@phosphor-icons/react";
 import { authClient } from "@/lib/auth-client"
+import { AlertModal } from "@/components/ui/alert-modal"
+import { useAlertModal } from "@/hooks/use-alert-modal"
 
 
 const loginSchema = z.object({
@@ -26,6 +28,7 @@ export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
+  const { alertState, showAlert, hideAlert } = useAlertModal()
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -51,7 +54,7 @@ export function LoginForm() {
       onError: (ctx) => {
         console.log("Erro ao logar: ", ctx);
         if(ctx.error.code === "INVALID_EMAIL_OR_PASSWORD"){ 
-          alert("Email ou senha inválidos");
+          showAlert("Email ou senha inválidos", "error");
         }
       },
       }
@@ -65,8 +68,16 @@ export function LoginForm() {
   } 
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+    <>
+      <AlertModal
+        open={alertState.open}
+        onClose={hideAlert}
+        message={alertState.message}
+        type={alertState.type}
+        title={alertState.title}
+      />
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <FormField
           control={form.control}
           name="email"
@@ -157,5 +168,6 @@ export function LoginForm() {
         </Button>
       </form>
     </Form>
+    </>
   )
 }

@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { authClient } from "@/lib/auth-client"
+import { AlertModal } from "@/components/ui/alert-modal"
+import { useAlertModal } from "@/hooks/use-alert-modal"
 
 const forgotPasswordSchema = z.object({
   email: z.string().email({ message: "Email inválido" }),
@@ -20,6 +22,7 @@ type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>
 
 export function ForgotPasswordForm() {
   const [emailSent, setEmailSent] = useState(false)
+  const { alertState, showAlert, hideAlert } = useAlertModal()
 
   const form = useForm<ForgotPasswordFormValues>({
     resolver: zodResolver(forgotPasswordSchema),
@@ -39,14 +42,14 @@ export function ForgotPasswordForm() {
 
       if (error) {
         console.error("Erro ao solicitar reset de senha:", error);
-        alert("Erro ao solicitar reset de senha. Verifique o console para mais detalhes.");
+        showAlert("Erro ao solicitar reset de senha. Verifique o console para mais detalhes.", "error");
       } else {
         console.log("Email de reset enviado com sucesso!");
         setEmailSent(true)
       }
     } catch (error) {
       console.error("Erro ao solicitar reset de senha:", error);
-      alert("Erro ao solicitar reset de senha. Verifique o console para mais detalhes.");
+      showAlert("Erro ao solicitar reset de senha. Verifique o console para mais detalhes.", "error");
     }
   }
 
@@ -67,8 +70,16 @@ export function ForgotPasswordForm() {
   }
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+    <>
+      <AlertModal
+        open={alertState.open}
+        onClose={hideAlert}
+        message={alertState.message}
+        type={alertState.type}
+        title={alertState.title}
+      />
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <FormField
           control={form.control}
           name="email"
@@ -113,5 +124,6 @@ export function ForgotPasswordForm() {
         </div>
       </form>
     </Form>
+    </>
   )
 }

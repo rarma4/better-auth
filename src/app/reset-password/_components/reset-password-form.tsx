@@ -12,6 +12,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { authClient } from "@/lib/auth-client"
+import { AlertModal } from "@/components/ui/alert-modal"
+import { useAlertModal } from "@/hooks/use-alert-modal"
 
 const resetPasswordSchema = z.object({
   password: z.string().min(8, { message: "A senha deve ter pelo menos 8 caracteres" }),
@@ -30,6 +32,7 @@ export function ResetPasswordForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const token = searchParams.get("token")
+  const { alertState, showAlert, hideAlert } = useAlertModal()
 
   const form = useForm<ResetPasswordFormValues>({
     resolver: zodResolver(resetPasswordSchema),
@@ -41,14 +44,16 @@ export function ResetPasswordForm() {
 
   useEffect(() => {
     if (!token) {
-      alert("Token inválido ou expirado")
-      router.push("/forgot-password")
+      showAlert("Token inválido ou expirado", "error");
+      setTimeout(() => {
+        router.push("/forgot-password")
+      }, 2000)
     }
-  }, [token, router])
+  }, [token, router, showAlert])
 
   async function onSubmit(formData: ResetPasswordFormValues) {
     if (!token) {
-      alert("Token inválido")
+      showAlert("Token inválido", "error");
       return
     }
 
@@ -62,7 +67,7 @@ export function ResetPasswordForm() {
 
       if (error) {
         console.error("Erro ao redefinir senha:", error);
-        alert("Erro ao redefinir senha. O link pode ter expirado. Verifique o console.");
+        showAlert("Erro ao redefinir senha. O link pode ter expirado. Verifique o console.", "error");
       } else {
         console.log("Senha redefinida com sucesso!");
         setResetSuccess(true)
@@ -72,7 +77,7 @@ export function ResetPasswordForm() {
       }
     } catch (error) {
       console.error("Erro ao redefinir senha:", error);
-      alert("Erro ao redefinir senha. O link pode ter expirado. Verifique o console.");
+      showAlert("Erro ao redefinir senha. O link pode ter expirado. Verifique o console.", "error");
     }
   }
 
@@ -93,104 +98,113 @@ export function ResetPasswordForm() {
   }
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <FormField
-          control={form.control}
-          name="password"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Nova senha</FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <Input
-                    placeholder="••••••••"
-                    type={showPassword ? "text" : "password"}
-                    {...field}
-                    disabled={form.formState.isSubmitting}
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                    onClick={() => setShowPassword(!showPassword)}
-                    disabled={form.formState.isSubmitting}
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4 text-muted-foreground" />
-                    ) : (
-                      <Eye className="h-4 w-4 text-muted-foreground" />
-                    )}
-                    <span className="sr-only">{showPassword ? "Esconder senha" : "Mostrar senha"}</span>
-                  </Button>
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+    <>
+      <AlertModal
+        open={alertState.open}
+        onClose={hideAlert}
+        message={alertState.message}
+        type={alertState.type}
+        title={alertState.title}
+      />
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Nova senha</FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <Input
+                      placeholder="••••••••"
+                      type={showPassword ? "text" : "password"}
+                      {...field}
+                      disabled={form.formState.isSubmitting}
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                      onClick={() => setShowPassword(!showPassword)}
+                      disabled={form.formState.isSubmitting}
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4 text-muted-foreground" />
+                      ) : (
+                        <Eye className="h-4 w-4 text-muted-foreground" />
+                      )}
+                      <span className="sr-only">{showPassword ? "Esconder senha" : "Mostrar senha"}</span>
+                    </Button>
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-        <FormField
-          control={form.control}
-          name="confirmPassword"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Confirmar nova senha</FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <Input
-                    placeholder="••••••••"
-                    type={showConfirmPassword ? "text" : "password"}
-                    {...field}
-                    disabled={form.formState.isSubmitting}
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    disabled={form.formState.isSubmitting}
-                  >
-                    {showConfirmPassword ? (
-                      <EyeOff className="h-4 w-4 text-muted-foreground" />
-                    ) : (
-                      <Eye className="h-4 w-4 text-muted-foreground" />
-                    )}
-                    <span className="sr-only">{showConfirmPassword ? "Esconder senha" : "Mostrar senha"}</span>
-                  </Button>
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+          <FormField
+            control={form.control}
+            name="confirmPassword"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Confirmar nova senha</FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <Input
+                      placeholder="••••••••"
+                      type={showConfirmPassword ? "text" : "password"}
+                      {...field}
+                      disabled={form.formState.isSubmitting}
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      disabled={form.formState.isSubmitting}
+                    >
+                      {showConfirmPassword ? (
+                        <EyeOff className="h-4 w-4 text-muted-foreground" />
+                      ) : (
+                        <Eye className="h-4 w-4 text-muted-foreground" />
+                      )}
+                      <span className="sr-only">{showConfirmPassword ? "Esconder senha" : "Mostrar senha"}</span>
+                    </Button>
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-        <Button 
-          type="submit" 
-          className="w-full" 
-          disabled={form.formState.isSubmitting}
-        >
-          {form.formState.isSubmitting ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Redefinindo...
-            </>
-          ) : (
-            "Redefinir senha"
-          )}
-        </Button>
-
-        <div className="text-center">
-          <Link 
-            href="/" 
-            className="text-sm text-muted-foreground hover:text-primary transition-colors"
+          <Button 
+            type="submit" 
+            className="w-full" 
+            disabled={form.formState.isSubmitting}
           >
-            Voltar para o login
-          </Link>
-        </div>
-      </form>
-    </Form>
+            {form.formState.isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Redefinindo...
+              </>
+            ) : (
+              "Redefinir senha"
+            )}
+          </Button>
+
+          <div className="text-center">
+            <Link 
+              href="/" 
+              className="text-sm text-muted-foreground hover:text-primary transition-colors"
+            >
+              Voltar para o login
+            </Link>
+          </div>
+        </form>
+      </Form>
+    </>
   )
 }
